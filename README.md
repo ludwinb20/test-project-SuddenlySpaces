@@ -140,37 +140,90 @@ The project will be available at `http://localhost:3000`
 
 ## 🗄️ Database Structure
 
-### Main Models
+### Database Models
 
 #### User
 
-- `id`: Unique identifier
-- `name`: Full name
-- `email`: Unique email
-- `password`: Hashed password
-- `role`: User role (OWNER/TENANT)
-- `createdAt/updatedAt`: Timestamps
+- `id`: Unique identifier (CUID)
+- `name`: Full name (optional)
+- `email`: Unique email address
+- `emailVerified`: Email verification timestamp
+- `password`: Hashed password (optional, for credentials provider)
+- `role`: User role (OWNER/TENANT) - defaults to TENANT
+- `createdAt`: Account creation timestamp
+- `updatedAt`: Last update timestamp
+- **Relationships**:
+  - `accounts`: OAuth accounts (Google, GitHub, etc.)
+  - `sessions`: Active user sessions
+  - `properties`: Properties owned by this user
 
 #### Property
 
-- `id`: Unique identifier
-- `title`: Property title
-- `description`: Optional description
-- `location`: Address
-- `city`: City
-- `rentAmount`: Rent amount
-- `propertyType`: Property type (COWORKING/RESIDENTIAL/SHORT_TERM)
-- `leaseType`: Lease type (MONTHLY/YEARLY/FLEXIBLE)
-- `isAvailable`: Availability
-- `ownerId`: Reference to owner
+- `id`: Unique identifier (CUID)
+- `title`: Property title/name
+- `description`: Optional property description
+- `location`: Property address
+- `city`: City where property is located
+- `rentAmount`: Monthly rent amount (Float)
+- `propertyType`: Type of property (COWORKING/RESIDENTIAL/SHORT_TERM)
+- `leaseType`: Lease duration (MONTHLY/YEARLY/FLEXIBLE)
+- `isAvailable`: Property availability status (defaults to true)
+- `createdAt`: Property creation timestamp
+- `updatedAt`: Last update timestamp
+- `ownerId`: Reference to property owner
+- **Relationships**:
+  - `owner`: User who owns this property
 
-#### Application
+#### Account (NextAuth.js)
 
-- `id`: Unique identifier
-- `propertyId`: Reference to property
-- `tenantId`: Reference to tenant
-- `status`: Application status (PENDING/APPROVED/REJECTED)
-- `riskScore`: Risk score (0-100)
+- `id`: Unique identifier (CUID)
+- `userId`: Reference to user
+- `type`: Account type (oauth, oidc, email)
+- `provider`: OAuth provider (google, github, etc.)
+- `providerAccountId`: Provider's user ID
+- `refresh_token`: OAuth refresh token
+- `access_token`: OAuth access token
+- `expires_at`: Token expiration timestamp
+- `token_type`: Type of token
+- `scope`: OAuth scope
+- `id_token`: OpenID Connect ID token
+- `session_state`: OAuth session state
+- **Relationships**:
+  - `user`: User this account belongs to
+
+#### Session (NextAuth.js)
+
+- `id`: Unique identifier (CUID)
+- `sessionToken`: Unique session token
+- `userId`: Reference to user
+- `expires`: Session expiration timestamp
+- **Relationships**:
+  - `user`: User this session belongs to
+
+#### VerificationToken (NextAuth.js)
+
+- `identifier`: Email or phone being verified
+- `token`: Verification token
+- `expires`: Token expiration timestamp
+
+### Enums
+
+#### UserRole
+
+- `OWNER`: Property owner with full management permissions
+- `TENANT`: Property seeker with browsing permissions
+
+#### PropertyType
+
+- `COWORKING`: Shared workspace properties
+- `RESIDENTIAL`: Traditional housing properties
+- `SHORT_TERM`: Temporary accommodation properties
+
+#### LeaseType
+
+- `MONTHLY`: Monthly rental agreements
+- `YEARLY`: Annual rental agreements
+- `FLEXIBLE`: Custom duration agreements
 
 ## 🔐 Authentication and Authorization
 
